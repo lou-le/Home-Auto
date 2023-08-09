@@ -25,20 +25,36 @@ int blindAngle = 0;
 const int blindMoveInterval = 10;
 
 void IRAM_ATTR moveBlindR() {
+  Serial.println("MoveBlindR Button Pressed");
   PositionStepper.move(blindMoveInterval);
   digitalWrite(LEDPin, 1);
+  while (PositionStepper.distanceToGo() != 0) {
+    PositionStepper.run();
+  }
 }
 void IRAM_ATTR moveBlindL() {
+  Serial.println("MoveBlindL Button Pressed");
   PositionStepper.move(-blindMoveInterval);
   digitalWrite(LEDPin, 1);
+  while (PositionStepper.distanceToGo() != 0) {
+    PositionStepper.run();
+  }
 }
 void IRAM_ATTR moveTiltR() {
+  Serial.println("moveTiltR() Button Pressed");
   AngleStepper.move(blindMoveInterval);
   digitalWrite(LEDPin, 1);
+  while (AngleStepper.distanceToGo() != 0) {
+    AngleStepper.run();
+  }
 }
 void IRAM_ATTR moveTiltL() {
+  Serial.println("moveTiltL Button Pressed");
   AngleStepper.move(-blindMoveInterval);
   digitalWrite(LEDPin, 1);
+  while (AngleStepper.distanceToGo() != 0) {
+    AngleStepper.run();
+  }
 }
 
 void homeBlinds() {
@@ -70,7 +86,7 @@ void homeBlinds() {
 }
 
 void setup() {
-  // Declare pins as output:
+  Serial.begin(115200);
   pinMode(LEDPin, OUTPUT);
   pinMode(r_blind_button, INPUT_PULLDOWN);
   pinMode(l_blind_button, INPUT_PULLDOWN);
@@ -96,10 +112,4 @@ void setup() {
 
 void loop() {
   digitalWrite(LEDPin, 0);
-  while (AngleStepper.distanceToGo() != 0) {
-    AngleStepper.run();
-  }
-  while (PositionStepper.distanceToGo() != 0) {
-    PositionStepper.run();
-  }
 }
