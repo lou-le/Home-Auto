@@ -8,53 +8,38 @@
 #define slatePos_step 2
 #define slatePos_dir 4
 
-#define r_blind_button 40
-#define l_blind_button 38
-#define r_tilt_button 36
-#define l_tilt_button 34
+#define r_blind_button 39
+#define l_blind_button 37
+#define r_tilt_button 35
+#define l_tilt_button 33
 
 #define LEDPin 15
 
 
-AccelStepper AngleStepper(AccelStepper::DRIVER, slateAngle_step, slateAngle_dir, slateAngle_EN);
-AccelStepper PositionStepper(AccelStepper::DRIVER, slatePos_step, slatePos_dir, slatePos_EN);
+AccelStepper AngleStepper(AccelStepper::DRIVER, slateAngle_step, slateAngle_dir);
+AccelStepper PositionStepper(AccelStepper::DRIVER, slatePos_step, slatePos_dir);
 
 int blindPosition = 0;
 int blindAngle = 0;
 
-const int blindMoveInterval = 10;
+const int blindMoveInterval = 30;
 
 void IRAM_ATTR moveBlindR() {
   Serial.println("MoveBlindR Button Pressed");
   PositionStepper.move(blindMoveInterval);
-  digitalWrite(LEDPin, 1);
-  while (PositionStepper.distanceToGo() != 0) {
-    PositionStepper.run();
-  }
 }
 void IRAM_ATTR moveBlindL() {
   Serial.println("MoveBlindL Button Pressed");
   PositionStepper.move(-blindMoveInterval);
-  digitalWrite(LEDPin, 1);
-  while (PositionStepper.distanceToGo() != 0) {
-    PositionStepper.run();
-  }
+
 }
 void IRAM_ATTR moveTiltR() {
   Serial.println("moveTiltR() Button Pressed");
   AngleStepper.move(blindMoveInterval);
-  digitalWrite(LEDPin, 1);
-  while (AngleStepper.distanceToGo() != 0) {
-    AngleStepper.run();
-  }
 }
 void IRAM_ATTR moveTiltL() {
   Serial.println("moveTiltL Button Pressed");
   AngleStepper.move(-blindMoveInterval);
-  digitalWrite(LEDPin, 1);
-  while (AngleStepper.distanceToGo() != 0) {
-    AngleStepper.run();
-  }
 }
 
 void homeBlinds() {
@@ -86,30 +71,51 @@ void homeBlinds() {
 }
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   pinMode(LEDPin, OUTPUT);
-  pinMode(r_blind_button, INPUT_PULLDOWN);
-  pinMode(l_blind_button, INPUT_PULLDOWN);
-  pinMode(r_tilt_button, INPUT_PULLDOWN);
-  pinMode(l_tilt_button, INPUT_PULLDOWN);
-  attachInterrupt(r_blind_button, moveBlindR, FALLING);
-  attachInterrupt(l_blind_button, moveBlindL, FALLING);
-  attachInterrupt(r_tilt_button, moveTiltR, FALLING);
-  attachInterrupt(l_tilt_button, moveTiltL, FALLING);
+  pinMode(r_blind_button, INPUT_PULLUP);
+  pinMode(l_blind_button, INPUT_PULLUP);
+  pinMode(r_tilt_button, INPUT_PULLUP);
+  pinMode(l_tilt_button, INPUT_PULLUP);
+  attachInterrupt(r_blind_button, moveBlindR, RISING);
+  attachInterrupt(l_blind_button, moveBlindL, RISING);
+  attachInterrupt(r_tilt_button, moveTiltR, RISING);
+  attachInterrupt(l_tilt_button, moveTiltL, RISING);
 
 
   AngleStepper.setMaxSpeed(2500);
   AngleStepper.setAcceleration(1000);
   AngleStepper.setPinsInverted(0, 0, 1);
+  AngleStepper.setEnablePin(slateAngle_EN);
 
   PositionStepper.setMaxSpeed(2500);
   PositionStepper.setAcceleration(1000);
   PositionStepper.setPinsInverted(0, 0, 1);
+  PositionStepper.setEnablePin(slatePos_EN);
 
+  Serial.println("Booted up");
   homeBlinds();
+  Serial.println("Homing Completed");
 }
 
 
 void loop() {
-  digitalWrite(LEDPin, 0);
+  //  AngleStepper.disableOutputs();
+  //  PositionStepper.disableOutputs();
+
+  for (int i = 0; i <= 100; i++) {
+    digitalWrite(LEDPin, 0);
+    delay(700);
+    digitalWrite(LEDPin, 1);
+    delay(700);
+  }
+
+  while (PositionStepper.distanceToGo() != 0) {
+    PositionStepper.run();    
+  }
+  while (AngleStepper.distanceToGo() != 0) {
+    AngleStepper.run();
+  }
+
+
 }
